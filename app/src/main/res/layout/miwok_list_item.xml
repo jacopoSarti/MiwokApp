@@ -6,12 +6,13 @@
     android:layout_height="match_parent">
 
     <ImageView
+        android:id="@+id/image"
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_height="match_parent"
-        android:src="@mipmap/ic_launcher"/>
+        android:layout_height="match_parent"/>
 
     <LinearLayout
+        android:id="@+id/centralLayout"
         android:layout_width="0dp"
         android:layout_weight="3"
         android:orientation="vertical"
@@ -22,12 +23,19 @@
             android:id="@+id/miwok_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
             tools:text="lutti"/>
 
         <TextView
             android:id="@+id/english_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="top"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@android:color/white"
             tools:text="one"/>
 
     </LinearLayout>
