@@ -28,6 +28,12 @@ public class PhrasesActivity extends AppCompatActivity {
 
     ArrayList<Word> words = new ArrayList<>();
     MediaPlayer mediaPlayer;
+    MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            releaseMediaPlayer();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +63,31 @@ public class PhrasesActivity extends AppCompatActivity {
 
                 Word currentWord = words.get(position);
 
+                // Release media player if it currently exists for memory purposes.
+                releaseMediaPlayer();
+
+                //Instantiates MediaPlayer object
                 mediaPlayer = MediaPlayer.create(PhrasesActivity.this, currentWord.getmAudioId());
+
+
                 mediaPlayer.start();
+
+                // Release all resources once the event is completed
+                mediaPlayer.setOnCompletionListener(onCompletionListener);
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        releaseMediaPlayer();
+    }
+
+    private void releaseMediaPlayer() {
+        if(mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 }
