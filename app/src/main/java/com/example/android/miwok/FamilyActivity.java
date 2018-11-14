@@ -15,12 +15,14 @@
  */
 package com.example.android.miwok;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -28,11 +30,32 @@ import java.util.ArrayList;
 public class FamilyActivity extends AppCompatActivity {
 
     ArrayList<Word> words = new ArrayList<>();
-    MediaPlayer mediaPlayer;
-    MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+    MediaPlayer mMediaPlayer;
+    MediaPlayer.OnCompletionListener mOnCompletionListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             releaseMediaPlayer();
+        }
+    };
+
+    AudioManager mAudioManager;
+
+    AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+                    focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                // Pause playback and reset player to the start of the file.
+                // Word will play from the beginning next time it is clicked on.
+                mMediaPlayer.pause();
+                mMediaPlayer.seekTo(0);
+            } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                // Resume playback from where it had stopped.
+                mMediaPlayer.start();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                // Stop playback and release all resources
+                releaseMediaPlayer();
+            }
         }
     };
 
@@ -40,6 +63,8 @@ public class FamilyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.word_list);
+
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         words.add(new Word("father", "epe", R.drawable.family_father, R.raw.family_father));
         words.add(new Word("mother", "eta", R.drawable.family_mother, R.raw.family_mother));
@@ -65,14 +90,22 @@ public class FamilyActivity extends AppCompatActivity {
                 // Release media player if it currently exists for memory purposes.
                 releaseMediaPlayer();
 
-                //Instantiates MediaPlayer object
-                mediaPlayer = MediaPlayer.create(FamilyActivity.this, currentWord.getmAudioId());
+                int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+                        AudioManager.STREAM_MUSIC,
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+
+                if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    // We have Audio Focus now.
+
+                    //Instantiates MediaPlayer object
+                    mMediaPlayer = MediaPlayer.create(FamilyActivity.this, currentWord.getmAudioId());
 
 
-                mediaPlayer.start();
+                    mMediaPlayer.start();
 
-                // Release all resources once the event is completed
-                mediaPlayer.setOnCompletionListener(onCompletionListener);
+                    // Release all resources once the event is completed
+                    mMediaPlayer.setOnCompletionListener(mOnCompletionListener);
+                }
             }
         });
 
@@ -85,9 +118,10 @@ public class FamilyActivity extends AppCompatActivity {
     }
 
     private void releaseMediaPlayer() {
-        if(mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
+        if(mMediaPlayer != null) {
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+            mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
         }
     }
 }
