@@ -17,6 +17,7 @@ package com.example.android.miwok;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -34,8 +35,14 @@ public class MainActivity extends AppCompatActivity {
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
 
-        WordFragmentPagerAdapter adapter = new WordFragmentPagerAdapter(getSupportFragmentManager());
+        WordFragmentPagerAdapter adapter = new WordFragmentPagerAdapter(this, getSupportFragmentManager());
 
+        // Set the adapter onto the view pager
         viewPager.setAdapter(adapter);
+
+        //Find the tab layout that shows the tabs
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+
+        tabLayout.setupWithViewPager(viewPager);
     }
 }
